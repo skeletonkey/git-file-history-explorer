@@ -10,6 +10,8 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"os"
 	"os/exec"
+	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -24,23 +26,23 @@ func main() {
 	a := app.New()
 	w := a.NewWindow(filename)
 
-	commits := getCommits(".", filename)
-	fileContentsLabel := widget.NewLabel(commits[0].getFile(filename))
-	commitInfoLabel := widget.NewLabel(commits[0].fullCommit)
+	repo := newRepo(filename)
+	fileContentsLabel := widget.NewLabel(repo.getFileLogs(0))
+	commitInfoLabel := widget.NewLabel(repo.getFileLogs(0))
 
 	listWidget := widget.NewList(
 		func() int {
-			return len(commits)
+			return len(repo.commits)
 		},
 		func() fyne.CanvasObject {
 			return widget.NewLabel("template")
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*widget.Label).SetText(commits[i].label())
+			o.(*widget.Label).SetText(repo.commits[i].label())
 		})
 	listWidget.OnSelected = func(id widget.ListItemID) {
-		fileContentsLabel.SetText(commits[id].getFile(filename))
-		commitInfoLabel.SetText(commits[id].fullCommit)
+		fileContentsLabel.SetText(repo.getFileLogs(id))
+		commitInfoLabel.SetText(repo.commits[id].fullCommit)
 	}
 
 	w.SetContent(container.NewBorder(
@@ -53,11 +55,39 @@ func main() {
 	w.ShowAndRun()
 }
 
-func getCommits(dir string, filename string) []commitData {
+type repo struct {
+	baseDir      string
+	commits      []commitData
+	relativeFile string
+}
+
+func newRepo(file string) repo {
+	fileDir, _ := path.Split(file)
+	if fileDir == "" {
+		fileDir = "."
+	}
+
+	dir := executeCmd("git", "-C", fileDir, "rev-parse", "--show-toplevel")
+
+	fullFilename, err := filepath.Abs(file)
+	panicOnError(err)
+
+	r := repo{
+		baseDir:      dir,
+		relativeFile: fullFilename[len(dir)+1:],
+	}
+	r.setCommits()
+
+	return r
+}
+
+func (r *repo) setCommits() {
 	var commits []commitData
 
-	repo, err := git.PlainOpen(dir)
+	repo, err := git.PlainOpen(r.baseDir)
 	panicOnError(err)
+
+	filename := r.relativeFile
 	logOptions := git.LogOptions{
 		FileName: &filename,
 	}
@@ -69,25 +99,29 @@ func getCommits(dir string, filename string) []commitData {
 	})
 	panicOnError(err)
 
-	return commits
+	r.commits = commits
+}
+
+func (r *repo) getFileLogs(commitID int) string {
+	return executeCmd("git", "-C", r.baseDir, "show", r.commits[commitID].hash+":"+r.relativeFile)
 }
 
 type commitData struct {
 	author     string
 	committer  string
+	fullCommit string
 	hash       string
 	message    string
 	shortHash  string
-	fullCommit string
 }
 
 func newCommitData(c *object.Commit) (d commitData) {
 	d.author = c.Author.String()
 	d.committer = c.Committer.String()
+	d.fullCommit = c.String()
 	d.hash = c.Hash.String()
 	d.message = c.Message
 	d.shortHash = c.Hash.String()[:8]
-	d.fullCommit = c.String()
 
 	return d
 }
@@ -100,18 +134,19 @@ func (c commitData) label() string {
 	return c.shortHash + " - " + msg
 }
 
-func (c commitData) getFile(filename string) string {
+func executeCmd(cmdName string, args ...string) string {
 	var out strings.Builder
-	cmd := exec.Command("git", "show", c.hash+":"+filename)
+	cmd := exec.Command(cmdName, args...)
 	cmd.Stdout = &out
 	err := cmd.Run()
 	panicOnError(err)
-	return out.String()
+	return strings.TrimRight(out.String(), "\n")
 }
 
 func getFileName() string {
 	if len(os.Args) == 1 {
-		panicOnError(fmt.Errorf("%s requires a filename as an argument", os.Args[0]))
+		_, filename := path.Split(os.Args[0])
+		panicOnError(fmt.Errorf("%s requires a filename as an argument", filename))
 	}
 	if _, err := os.Stat(os.Args[1]); err != nil {
 		panicOnError(err)
