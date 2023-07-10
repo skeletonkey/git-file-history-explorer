@@ -28,7 +28,7 @@ func main() {
 
 	repo := newRepo(filename)
 	fileContentsLabel := widget.NewLabel(repo.getFileLogs(0))
-	commitInfoLabel := widget.NewLabel(repo.getFileLogs(0))
+	commitDetailsLabel := widget.NewLabel(repo.commits[0].fullCommit)
 
 	listWidget := widget.NewList(
 		func() int {
@@ -40,15 +40,16 @@ func main() {
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(repo.commits[i].label())
 		})
+	listWidget.Select(0)
 	listWidget.OnSelected = func(id widget.ListItemID) {
 		fileContentsLabel.SetText(repo.getFileLogs(id))
-		commitInfoLabel.SetText(repo.commits[id].fullCommit)
+		commitDetailsLabel.SetText(repo.commits[id].fullCommit)
 	}
 
 	w.SetContent(container.NewBorder(
 		nil,
 		nil,
-		container.NewVSplit(listWidget, container.NewVScroll(commitInfoLabel)),
+		container.NewVSplit(listWidget, container.NewVScroll(commitDetailsLabel)),
 		container.NewVScroll(fileContentsLabel),
 	))
 
