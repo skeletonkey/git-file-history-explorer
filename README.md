@@ -14,22 +14,7 @@ Currently, the project needs to be built directly with the following steps:
 * run `CGO_ENABLED=1 go build -o git-file-history-explorer`
 * place `git-file-history-explorer` in your PATH, or you'll need to run it using a full (or relative) path
 
-*NOTE*: currently `git-file-history-explorer` only works if you run the command from the *root of the git repo that contains the file*!!!
-
 Once a stable version 1.0.0 is reached, compiled versions will be available for each release.
-
-### Example:
-
-* `git-file-history-explorer` is in your home directory
-* your repo is located at `~/src/my_repo_dir`
-* you want to explore the history of `~/src/my_repo_dir/cmd/main.go`
-
-This is what you would do at the command prompt:
-
-```bash
-cd ~/src/my_repo_dir
-~/git-file-history-explorer cmd/main.go
-```
 
 ## Development
 
