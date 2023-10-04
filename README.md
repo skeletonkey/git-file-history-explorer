@@ -8,10 +8,10 @@ A simple viewer to see how a file has changed from commit to commit.
 
 Currently, the project needs to be built directly with the following steps:
 
-* [Install Go v1.20](https://go.dev/doc/install)
+* [Install Go v1.21](https://go.dev/doc/install)
   * [GVM is highly recommended](https://github.com/moovweb/gvm) if working with multiple versions of Go
 * clone this repo
-* run `CGO_ENABLED=1 go build -o git-file-history-explorer`
+* run `make` or manually build the project with `CGO_ENABLED=1 go build -o bin/asgit-file-history-explorer`
 * place `git-file-history-explorer` in your PATH, or you'll need to run it using a full (or relative) path
 
 Once a stable version 1.0.0 is reached, compiled versions will be available for each release.
