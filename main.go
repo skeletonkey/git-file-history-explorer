@@ -69,14 +69,8 @@ func main() {
 	leftColumn.Resize(leftContainerSize)
 
 	w.SetContent(
-		container.NewAdaptiveGrid(2,
-			container.NewBorder(
-				nil,
-				nil,
-				nil,
-				nil,
-				container.NewVSplit(listWidget, container.NewVScroll(commitDetailsLabel)),
-			),
+		container.NewGridWithColumns(2,
+			container.NewVSplit(listWidget, container.NewVScroll(commitDetailsLabel)),
 			container.NewVScroll(fileContentsLabel),
 		))
 
