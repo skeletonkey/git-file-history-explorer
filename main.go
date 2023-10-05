@@ -70,8 +70,8 @@ func main() {
 
 	w.SetContent(
 		container.NewGridWithColumns(2,
-			container.NewVSplit(listWidget, container.NewVScroll(commitDetailsLabel)),
-			container.NewVScroll(fileContentsLabel),
+			container.NewVSplit(listWidget, container.NewScroll(commitDetailsLabel)),
+			container.NewScroll(fileContentsLabel),
 		))
 
 	w.Resize(fyne.NewSize(windowWidth, windowHeight))
