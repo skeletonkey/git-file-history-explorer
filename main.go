@@ -157,11 +157,11 @@ func newCommitData(c *object.Commit) (d commitData) {
 }
 
 func (c commitData) label() string {
-	msg := c.message
-	if len(msg) > 20 {
-		msg = msg[:20]
+	msg := c.shortHash + " - " + c.message
+	if len(msg) > commitLabelMaxLength {
+		msg = msg[:commitLabelMaxLength-3] + "..."
 	}
-	return c.shortHash + " - " + msg
+	return msg
 }
 
 func executeCmd(cmdName string, args ...string) string {
