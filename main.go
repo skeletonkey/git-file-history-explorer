@@ -26,6 +26,17 @@ func main() {
 	a := app.New()
 	w := a.NewWindow(filename)
 
+	var windowHeight float32 = 1000
+	var windowWidth float32 = 600
+	var leftColWidth float32 = 365
+	var rightColWidth = windowWidth - leftColWidth
+	var leftTopCellHeight float32 = 600
+	var leftBottomCellHeight = windowHeight - leftTopCellHeight
+
+	leftContainerSize := fyne.NewSize(leftColWidth, windowHeight)
+	rightContainerSize := fyne.NewSize(rightColWidth, windowHeight)
+	commitDetailSize := fyne.NewSize(leftColWidth, leftBottomCellHeight)
+
 	repo := newRepo(filename)
 	fileContentsLabel := widget.NewLabel(repo.getFileLogs(0))
 	commitDetailsLabel := widget.NewLabel(repo.commits[0].fullCommit)
@@ -46,13 +57,31 @@ func main() {
 		commitDetailsLabel.SetText(repo.commits[id].fullCommit)
 	}
 
-	w.SetContent(container.NewBorder(
-		nil,
-		nil,
-		container.NewVSplit(listWidget, container.NewVScroll(commitDetailsLabel)),
-		container.NewVScroll(fileContentsLabel),
-	))
+	detailsContainer := container.NewScroll(commitDetailsLabel)
+	detailsContainer.Resize(commitDetailSize)
 
+	fileContentsLabel.Resize(rightContainerSize)
+	fileContainer := container.NewScroll(fileContentsLabel)
+	fileContainer.Resize(rightContainerSize)
+
+	leftColumn := container.NewVSplit(listWidget, detailsContainer)
+	//leftColumn := container.NewVSplit(listWidget, commitDetailsLabel)
+	leftColumn.Resize(leftContainerSize)
+
+	w.SetContent(
+		container.NewAdaptiveGrid(2,
+			container.NewBorder(
+				nil,
+				nil,
+				nil,
+				nil,
+				container.NewVSplit(listWidget, container.NewVScroll(commitDetailsLabel)),
+			),
+			container.NewVScroll(fileContentsLabel),
+		))
+
+	w.Resize(fyne.NewSize(windowWidth, windowHeight))
+	w.SetTitle(repo.baseDir + ":" + repo.relativeFile)
 	w.ShowAndRun()
 }
 
