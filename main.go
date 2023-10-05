@@ -173,14 +173,20 @@ func executeCmd(cmdName string, args ...string) string {
 	return strings.TrimRight(out.String(), "\n")
 }
 
+// getFileName checks that a filename is provided and that the file exists
 func getFileName() string {
 	if len(os.Args) == 1 {
 		_, filename := path.Split(os.Args[0])
 		panicOnError(fmt.Errorf("%s requires a filename as an argument", filename))
 	}
-	if _, err := os.Stat(os.Args[1]); err != nil {
-		panicOnError(err)
+	fileInfo, err := os.Stat(os.Args[1])
+	if err != nil {
+		panicOnError(fmt.Errorf("error attemtping to get FileInfo for %s: %s", os.Args[1], err))
 	}
+	if fileInfo.IsDir() {
+		panicOnError(fmt.Errorf("filename (%s) provided is a direcotry", fileInfo.Name()))
+	}
+
 	return os.Args[1]
 }
 
