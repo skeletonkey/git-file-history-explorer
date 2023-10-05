@@ -20,17 +20,23 @@ import (
 //    cmd/fyne_demo/tutorials
 // fyne_demo &
 
+const (
+	// window sizes
+	windowHeight      float32 = 500
+	windowWidth       float32 = 500
+	leftColWidth      float32 = 200
+	leftTopCellHeight float32 = 200
+
+	commitLabelMaxLength = 34 // characters - zero-based # - appears to be limited by list widget
+)
+
 func main() {
 	filename := getFileName()
 
 	a := app.New()
 	w := a.NewWindow(filename)
 
-	var windowHeight float32 = 1000
-	var windowWidth float32 = 600
-	var leftColWidth float32 = 365
 	var rightColWidth = windowWidth - leftColWidth
-	var leftTopCellHeight float32 = 600
 	var leftBottomCellHeight = windowHeight - leftTopCellHeight
 
 	leftContainerSize := fyne.NewSize(leftColWidth, windowHeight)
