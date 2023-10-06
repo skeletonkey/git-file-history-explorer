@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+	"path"
+	"path/filepath"
+	"strings"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"os"
-	"os/exec"
-	"path"
-	"path/filepath"
-	"strings"
 )
 
 // Notes:
@@ -37,11 +38,9 @@ func main() {
 	w := a.NewWindow(filename)
 
 	var rightColWidth = windowWidth - leftColWidth
-	var leftBottomCellHeight = windowHeight - leftTopCellHeight
 
 	leftContainerSize := fyne.NewSize(leftColWidth, windowHeight)
 	rightContainerSize := fyne.NewSize(rightColWidth, windowHeight)
-	commitDetailSize := fyne.NewSize(leftColWidth, leftBottomCellHeight)
 
 	repo := newRepo(filename)
 	fileContentsLabel := widget.NewLabel(repo.getFileLogs(0))
@@ -63,22 +62,15 @@ func main() {
 		commitDetailsLabel.SetText(repo.commits[id].fullCommit)
 	}
 
-	detailsContainer := container.NewScroll(commitDetailsLabel)
-	detailsContainer.Resize(commitDetailSize)
+	leftContainer := container.NewVSplit(listWidget, container.NewScroll(commitDetailsLabel))
+	leftContainer.Resize(rightContainerSize)
 
-	fileContentsLabel.Resize(rightContainerSize)
-	fileContainer := container.NewScroll(fileContentsLabel)
-	fileContainer.Resize(rightContainerSize)
-
-	leftColumn := container.NewVSplit(listWidget, detailsContainer)
-	//leftColumn := container.NewVSplit(listWidget, commitDetailsLabel)
-	leftColumn.Resize(leftContainerSize)
+	rightContainer := container.NewScroll(fileContentsLabel)
+	rightContainer.Resize(leftContainerSize)
 
 	w.SetContent(
-		container.NewGridWithColumns(2,
-			container.NewVSplit(listWidget, container.NewScroll(commitDetailsLabel)),
-			container.NewScroll(fileContentsLabel),
-		))
+		container.NewGridWithColumns(1, container.NewHSplit(leftContainer, rightContainer)),
+	)
 
 	w.Resize(fyne.NewSize(windowWidth, windowHeight))
 	w.SetTitle(repo.baseDir + ":" + repo.relativeFile)
