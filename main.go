@@ -25,7 +25,7 @@ const (
 	// window sizes
 	windowHeight      float32 = 500
 	windowWidth       float32 = 500
-	leftColWidth      float32 = 200
+	leftColWidth      float32 = 100
 	leftTopCellHeight float32 = 200
 
 	commitLabelMaxLength = 34 // characters - zero-based # - appears to be limited by list widget
@@ -37,16 +37,11 @@ func main() {
 	a := app.New()
 	w := a.NewWindow(filename)
 
-	var rightColWidth = windowWidth - leftColWidth
-
-	leftContainerSize := fyne.NewSize(leftColWidth, windowHeight)
-	rightContainerSize := fyne.NewSize(rightColWidth, windowHeight)
-
 	repo := newRepo(filename)
 	fileContentsLabel := widget.NewLabel(repo.getFileLogs(0))
 	commitDetailsLabel := widget.NewLabel(repo.commits[0].fullCommit)
 
-	listWidget := widget.NewList(
+	commitList := widget.NewList(
 		func() int {
 			return len(repo.commits)
 		},
@@ -56,17 +51,33 @@ func main() {
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(repo.commits[i].label())
 		})
-	listWidget.Select(0)
-	listWidget.OnSelected = func(id widget.ListItemID) {
+	commitList.Select(0)
+	commitList.OnSelected = func(id widget.ListItemID) {
 		fileContentsLabel.SetText(repo.getFileLogs(id))
 		commitDetailsLabel.SetText(repo.commits[id].fullCommit)
 	}
+	var rightColWidth = windowWidth - leftColWidth
+	var leftBottomCellHeight = windowHeight - leftTopCellHeight
 
-	leftContainer := container.NewVSplit(listWidget, container.NewScroll(commitDetailsLabel))
-	leftContainer.Resize(rightContainerSize)
+	leftContainerSize := fyne.NewSize(leftColWidth, windowHeight)
+	rightContainerSize := fyne.NewSize(rightColWidth, windowHeight)
+	commitDetailSize := fyne.NewSize(leftColWidth, leftBottomCellHeight)
 
+	// left side
+	detailsContainer := container.NewScroll(commitDetailsLabel)
+	detailsContainer.Resize(commitDetailSize)
+
+	// right side
+	fileContentsLabel.Resize(rightContainerSize)
+
+	leftColumn := container.NewVSplit(commitList, detailsContainer)
+	leftColumn.Resize(leftContainerSize)
+
+	leftContainer := container.NewVSplit(commitList, container.NewScroll(commitDetailsLabel))
 	rightContainer := container.NewScroll(fileContentsLabel)
-	rightContainer.Resize(leftContainerSize)
+
+	leftContainer.Resize(leftContainerSize)
+	rightContainer.Resize(rightContainerSize)
 
 	w.SetContent(
 		container.NewGridWithColumns(1, container.NewHSplit(leftContainer, rightContainer)),
