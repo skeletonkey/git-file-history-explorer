@@ -23,10 +23,12 @@ import (
 
 const (
 	// window sizes
-	windowHeight      float32 = 500
-	windowWidth       float32 = 500
-	leftColWidth      float32 = 100
-	leftTopCellHeight float32 = 200
+	windowHeight float32 = 700
+	windowWidth  float32 = 1200
+
+	// splits
+	commitListToDetails float64 = .8
+	commitInfoToFile    float64 = .35
 
 	commitLabelMaxLength = 34 // characters - zero-based # - appears to be limited by list widget
 )
@@ -56,32 +58,13 @@ func main() {
 		fileContentsLabel.SetText(repo.getFileLogs(id))
 		commitDetailsLabel.SetText(repo.commits[id].fullCommit)
 	}
-	var rightColWidth = windowWidth - leftColWidth
-	var leftBottomCellHeight = windowHeight - leftTopCellHeight
 
-	leftContainerSize := fyne.NewSize(leftColWidth, windowHeight)
-	rightContainerSize := fyne.NewSize(rightColWidth, windowHeight)
-	commitDetailSize := fyne.NewSize(leftColWidth, leftBottomCellHeight)
+	leftSplit := container.NewVSplit(commitList, container.NewScroll(commitDetailsLabel))
+	leftSplit.Offset = commitListToDetails
 
-	// left side
-	detailsContainer := container.NewScroll(commitDetailsLabel)
-	detailsContainer.Resize(commitDetailSize)
-
-	// right side
-	fileContentsLabel.Resize(rightContainerSize)
-
-	leftColumn := container.NewVSplit(commitList, detailsContainer)
-	leftColumn.Resize(leftContainerSize)
-
-	leftContainer := container.NewVSplit(commitList, container.NewScroll(commitDetailsLabel))
-	rightContainer := container.NewScroll(fileContentsLabel)
-
-	leftContainer.Resize(leftContainerSize)
-	rightContainer.Resize(rightContainerSize)
-
-	w.SetContent(
-		container.NewGridWithColumns(1, container.NewHSplit(leftContainer, rightContainer)),
-	)
+	screenSplit := container.NewHSplit(leftSplit, container.NewScroll(fileContentsLabel))
+	screenSplit.Offset = commitInfoToFile
+	w.SetContent(container.NewGridWithColumns(1, screenSplit))
 
 	w.Resize(fyne.NewSize(windowWidth, windowHeight))
 	w.SetTitle(repo.baseDir + ":" + repo.relativeFile)
