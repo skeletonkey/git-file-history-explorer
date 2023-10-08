@@ -67,6 +67,7 @@ func main() {
 	w.SetContent(container.NewGridWithColumns(1, screenSplit))
 
 	w.Resize(fyne.NewSize(windowWidth, windowHeight))
+	w.CenterOnScreen()
 	w.SetTitle(repo.baseDir + ":" + repo.relativeFile)
 	w.ShowAndRun()
 }
