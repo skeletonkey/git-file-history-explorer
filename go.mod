@@ -5,7 +5,7 @@ go 1.21
 require (
 	fyne.io/fyne/v2 v2.4.1
 	github.com/go-git/go-git/v5 v5.9.0
-	github.com/skeletonkey/lib-instance-gen-go v0.2.1
+	github.com/skeletonkey/lib-instance-gen-go v0.3.0
 )
 
 require (
