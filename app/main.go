@@ -168,10 +168,10 @@ func getFileName() string {
 	}
 	fileInfo, err := os.Stat(os.Args[1])
 	if err != nil {
-		panicOnError(fmt.Errorf("error attemtping to get FileInfo for %s: %s", os.Args[1], err))
+		panicOnError(fmt.Errorf("error attempting to get FileInfo for %s: %s", os.Args[1], err))
 	}
 	if fileInfo.IsDir() {
-		panicOnError(fmt.Errorf("filename (%s) provided is a direcotry", fileInfo.Name()))
+		panicOnError(fmt.Errorf("filename (%s) provided is a directory", fileInfo.Name()))
 	}
 
 	return os.Args[1]

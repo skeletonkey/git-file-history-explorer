@@ -12,7 +12,7 @@ Currently, the project needs to be built directly with the following steps:
   * [GVM is highly recommended](https://github.com/moovweb/gvm) if working with multiple versions of Go
 * clone this repo
 * run `make` or manually build the project with `CGO_ENABLED=1 go build -o bin/asgit-file-history-explorer`
-* place `git-file-history-explorer` in your PATH, or you'll need to run it using a full (or relative) path
+* place `bin/git-file-history-explorer` in your PATH, or you'll need to run it using a full (or relative) path
 
 Once a stable version 1.0.0 is reached, compiled versions will be available for each release.
 
@@ -47,14 +47,9 @@ To run or build, the CGO_ENABLED flag needs to be set.
 
 ```bash
 export CGO_ENABLED=1
-go run main.go filename_to_view
+go run app/*.go filename_to_view
 ```
 
 ```bash
-CGO_ENABLED=1 go run main.go filename_to_view
+CGO_ENABLED=1 go run app/*.go filename_to_view
 ```
-
-### Known Bugs
-
-* while selecting different commits, the file will not render
-  * fix: simply change the size of the window
