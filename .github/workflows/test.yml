@@ -1,5 +1,5 @@
 # lib-instance-gen-go: File auto generated -- DO NOT EDIT!!!
-name: Go
+name: Go Tests
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libx11-dev libxtst-dev libxrandr-dev libxcursor-dev
+        sudo apt-get install -y libx11-dev libxtst-dev libxrandr-dev libxcursor-dev libxinerama-dev
 
     - name: Checkout code
       uses: actions/checkout@v4
