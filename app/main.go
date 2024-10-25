@@ -20,6 +20,8 @@ import (
 // fyne_demo &
 
 const (
+	firstCommitIndex widget.ListItemID = 0
+
 	// window sizes
 	windowHeight float32 = 700
 	windowWidth  float32 = 1200
@@ -35,15 +37,15 @@ func main() {
 	a := app.New()
 	w := a.NewWindow(filename)
 
-	var lastCommitId widget.ListItemID = 0
+	var lastCommitId widget.ListItemID = firstCommitIndex
 
 	repo := repository.NewRepo(filename)
 
-	fileContents, err := repo.GetFileLogs(lastCommitId)
+	fileContents, err := repo.GetFileLogs(firstCommitIndex)
 	report.PanicOnError(err)
 
 	fileContentsLabel := widget.NewLabel(fileContents)
-	commitDetailsLabel := widget.NewLabel(repo.Commits[0].FullCommit)
+	commitDetailsLabel := widget.NewLabel(repo.Commits[firstCommitIndex].FullCommit)
 
 	commitList := widget.NewList(
 		func() int {
@@ -55,7 +57,7 @@ func main() {
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(repo.Commits[i].Label())
 		})
-	commitList.Select(lastCommitId)
+	commitList.Select(firstCommitIndex)
 	commitList.OnSelected = func(id widget.ListItemID) {
 		fileContents, err := repo.GetFileLogs(id)
 		if err != nil {
