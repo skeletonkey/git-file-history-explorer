@@ -22,7 +22,8 @@ func NewRepo(file string) repo {
 		fileDir = "."
 	}
 
-	dir := executeCmd("git", "-C", fileDir, "rev-parse", "--show-toplevel")
+	dir, err := executeCmd("git", "-C", fileDir, "rev-parse", "--show-toplevel")
+	report.PanicOnError(err)
 
 	fullFilename, err := filepath.Abs(file)
 	report.PanicOnError(err)
@@ -57,8 +58,8 @@ func (r *repo) setCommits() {
 	r.Commits = commits
 }
 
-func (r *repo) GetFileLogs(commitID int) string {
-	return executeCmd("git", "-C", r.baseDir, "show", r.Commits[commitID].hash+":"+r.relativeFile)
+func (r *repo) GetFileLogs(commitID int) (string, error) {
+	return executeCmd("git", "-C", r.baseDir, "show", r.Commits[commitID].Hash+":"+r.relativeFile)
 }
 
 func (r *repo) GetTitle() string {

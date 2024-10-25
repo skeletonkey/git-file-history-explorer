@@ -35,8 +35,14 @@ func main() {
 	a := app.New()
 	w := a.NewWindow(filename)
 
+	var lastCommitId widget.ListItemID = 0
+
 	repo := repository.NewRepo(filename)
-	fileContentsLabel := widget.NewLabel(repo.GetFileLogs(0))
+
+	fileContents, err := repo.GetFileLogs(lastCommitId)
+	report.PanicOnError(err)
+
+	fileContentsLabel := widget.NewLabel(fileContents)
 	commitDetailsLabel := widget.NewLabel(repo.Commits[0].FullCommit)
 
 	commitList := widget.NewList(
@@ -49,10 +55,18 @@ func main() {
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(repo.Commits[i].Label())
 		})
-	commitList.Select(0)
+	commitList.Select(lastCommitId)
 	commitList.OnSelected = func(id widget.ListItemID) {
-		fileContentsLabel.SetText(repo.GetFileLogs(id))
+		fileContents, err := repo.GetFileLogs(id)
+		if err != nil {
+			report.ErrorPopUp(fmt.Errorf("unable to get logs for commit %s: %s", repo.Commits[id].Hash, err), w, func() { commitList.Select(lastCommitId) })
+			return
+		}
+		fileContentsLabel.SetText(fileContents)
 		commitDetailsLabel.SetText(repo.Commits[id].FullCommit)
+	}
+	commitList.OnUnselected = func(id widget.ListItemID) {
+		lastCommitId = id
 	}
 
 	leftSplit := container.NewVSplit(commitList, container.NewScroll(commitDetailsLabel))
