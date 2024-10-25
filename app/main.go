@@ -14,6 +14,8 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
+
+	"github.com/skeletonkey/git-file-history-explorer/pkg/report"
 )
 
 // Notes:
@@ -87,7 +89,7 @@ func newRepo(file string) repo {
 	dir := executeCmd("git", "-C", fileDir, "rev-parse", "--show-toplevel")
 
 	fullFilename, err := filepath.Abs(file)
-	panicOnError(err)
+	report.PanicOnError(err)
 
 	r := repo{
 		baseDir:      dir,
@@ -102,19 +104,19 @@ func (r *repo) setCommits() {
 	var commits []commitData
 
 	repo, err := git.PlainOpen(r.baseDir)
-	panicOnError(err)
+	report.PanicOnError(err)
 
 	filename := r.relativeFile
 	logOptions := git.LogOptions{
 		FileName: &filename,
 	}
 	cIter, err := repo.Log(&logOptions)
-	panicOnError(err)
+	report.PanicOnError(err)
 	err = cIter.ForEach(func(c *object.Commit) error {
 		commits = append(commits, newCommitData(c))
 		return nil
 	})
-	panicOnError(err)
+	report.PanicOnError(err)
 
 	r.commits = commits
 }
@@ -156,7 +158,7 @@ func executeCmd(cmdName string, args ...string) string {
 	cmd := exec.Command(cmdName, args...)
 	cmd.Stdout = &out
 	err := cmd.Run()
-	panicOnError(err)
+	report.PanicOnError(err)
 	return strings.TrimRight(out.String(), "\n")
 }
 
@@ -164,21 +166,15 @@ func executeCmd(cmdName string, args ...string) string {
 func getFileName() string {
 	if len(os.Args) == 1 {
 		_, filename := path.Split(os.Args[0])
-		panicOnError(fmt.Errorf("%s requires a filename as an argument", filename))
+		report.PanicOnError(fmt.Errorf("%s requires a filename as an argument", filename))
 	}
 	fileInfo, err := os.Stat(os.Args[1])
 	if err != nil {
-		panicOnError(fmt.Errorf("error attempting to get FileInfo for %s: %s", os.Args[1], err))
+		report.PanicOnError(fmt.Errorf("error attempting to get FileInfo for %s: %s", os.Args[1], err))
 	}
 	if fileInfo.IsDir() {
-		panicOnError(fmt.Errorf("filename (%s) provided is a directory", fileInfo.Name()))
+		report.PanicOnError(fmt.Errorf("filename (%s) provided is a directory", fileInfo.Name()))
 	}
 
 	return os.Args[1]
-}
-
-func panicOnError(e error) {
-	if e != nil {
-		panic(e)
-	}
 }
