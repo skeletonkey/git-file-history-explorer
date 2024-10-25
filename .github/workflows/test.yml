@@ -11,7 +11,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libx11-dev libxtst-dev libxrandr-dev libxcursor-dev libxinerama-dev
+        sudo apt-get install -y libx11-dev libxtst-dev libxrandr-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev
 
     - name: Checkout code
       uses: actions/checkout@v4
@@ -21,5 +21,5 @@ jobs:
       with:
         go-version-file: go.mod
 
-    - name: Test
+    - name: Run Tests
       uses: robherley/go-test-action@v0
