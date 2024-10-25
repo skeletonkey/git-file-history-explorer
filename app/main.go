@@ -3,19 +3,15 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
-	"path/filepath"
-	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/object"
 
 	"github.com/skeletonkey/git-file-history-explorer/pkg/report"
+	"github.com/skeletonkey/git-file-history-explorer/pkg/repository"
 )
 
 // Notes:
@@ -31,8 +27,6 @@ const (
 	// splits
 	commitListToDetails float64 = .8
 	commitInfoToFile    float64 = .35
-
-	commitLabelMaxLength = 34 // characters - zero-based # - appears to be limited by list widget
 )
 
 func main() {
@@ -41,24 +35,24 @@ func main() {
 	a := app.New()
 	w := a.NewWindow(filename)
 
-	repo := newRepo(filename)
-	fileContentsLabel := widget.NewLabel(repo.getFileLogs(0))
-	commitDetailsLabel := widget.NewLabel(repo.commits[0].fullCommit)
+	repo := repository.NewRepo(filename)
+	fileContentsLabel := widget.NewLabel(repo.GetFileLogs(0))
+	commitDetailsLabel := widget.NewLabel(repo.Commits[0].FullCommit)
 
 	commitList := widget.NewList(
 		func() int {
-			return len(repo.commits)
+			return len(repo.Commits)
 		},
 		func() fyne.CanvasObject {
 			return widget.NewLabel("template")
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*widget.Label).SetText(repo.commits[i].label())
+			o.(*widget.Label).SetText(repo.Commits[i].Label())
 		})
 	commitList.Select(0)
 	commitList.OnSelected = func(id widget.ListItemID) {
-		fileContentsLabel.SetText(repo.getFileLogs(id))
-		commitDetailsLabel.SetText(repo.commits[id].fullCommit)
+		fileContentsLabel.SetText(repo.GetFileLogs(id))
+		commitDetailsLabel.SetText(repo.Commits[id].FullCommit)
 	}
 
 	leftSplit := container.NewVSplit(commitList, container.NewScroll(commitDetailsLabel))
@@ -70,96 +64,8 @@ func main() {
 
 	w.Resize(fyne.NewSize(windowWidth, windowHeight))
 	w.CenterOnScreen()
-	w.SetTitle(repo.baseDir + ":" + repo.relativeFile)
+	w.SetTitle(repo.GetTitle())
 	w.ShowAndRun()
-}
-
-type repo struct {
-	baseDir      string
-	commits      []commitData
-	relativeFile string
-}
-
-func newRepo(file string) repo {
-	fileDir, _ := path.Split(file)
-	if fileDir == "" {
-		fileDir = "."
-	}
-
-	dir := executeCmd("git", "-C", fileDir, "rev-parse", "--show-toplevel")
-
-	fullFilename, err := filepath.Abs(file)
-	report.PanicOnError(err)
-
-	r := repo{
-		baseDir:      dir,
-		relativeFile: fullFilename[len(dir)+1:],
-	}
-	r.setCommits()
-
-	return r
-}
-
-func (r *repo) setCommits() {
-	var commits []commitData
-
-	repo, err := git.PlainOpen(r.baseDir)
-	report.PanicOnError(err)
-
-	filename := r.relativeFile
-	logOptions := git.LogOptions{
-		FileName: &filename,
-	}
-	cIter, err := repo.Log(&logOptions)
-	report.PanicOnError(err)
-	err = cIter.ForEach(func(c *object.Commit) error {
-		commits = append(commits, newCommitData(c))
-		return nil
-	})
-	report.PanicOnError(err)
-
-	r.commits = commits
-}
-
-func (r *repo) getFileLogs(commitID int) string {
-	return executeCmd("git", "-C", r.baseDir, "show", r.commits[commitID].hash+":"+r.relativeFile)
-}
-
-type commitData struct {
-	author     string
-	committer  string
-	fullCommit string
-	hash       string
-	message    string
-	shortHash  string
-}
-
-func newCommitData(c *object.Commit) (d commitData) {
-	d.author = c.Author.String()
-	d.committer = c.Committer.String()
-	d.fullCommit = c.String()
-	d.hash = c.Hash.String()
-	d.message = c.Message
-	d.shortHash = c.Hash.String()[:8]
-
-	return d
-}
-
-func (c commitData) label() string {
-	msg := c.shortHash + " - " + c.message
-	if len(msg) > commitLabelMaxLength {
-		msg = msg[:commitLabelMaxLength-3] + "..."
-	}
-	return msg
-}
-
-func executeCmd(cmdName string, args ...string) string {
-	var out strings.Builder
-	cmd := exec.Command(cmdName, args...)
-	cmd.Stdout = &out
-	err := cmd.Run()
-	report.PanicOnError(err)
-	return strings.TrimRight(out.String(), "\n")
 }
 
 // getFileName checks that a filename is provided and that the file exists
