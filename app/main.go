@@ -61,7 +61,12 @@ func main() {
 	commitList.OnSelected = func(id widget.ListItemID) {
 		fileContents, err := repo.GetFileLogs(id)
 		if err != nil {
-			report.ErrorPopUp(fmt.Errorf("unable to get logs for commit %s: %s", repo.Commits[id].Hash, err), w, func() { commitList.Select(lastCommitId) })
+			report.ErrorPopUp(
+				fmt.Errorf("unable to get logs for commit %s: %s", repo.Commits[id].Hash, err),
+				w,
+				func() { commitList.Select(lastCommitId) },
+			)
+
 			return
 		}
 		fileContentsLabel.SetText(fileContents)
