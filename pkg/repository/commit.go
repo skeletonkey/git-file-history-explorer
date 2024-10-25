@@ -10,7 +10,7 @@ type commitData struct {
 	author     string
 	committer  string
 	FullCommit string
-	hash       string
+	Hash       string
 	message    string
 	shortHash  string
 }
@@ -19,7 +19,7 @@ func newCommitData(c *object.Commit) (d commitData) {
 	d.author = c.Author.String()
 	d.committer = c.Committer.String()
 	d.FullCommit = c.String()
-	d.hash = c.Hash.String()
+	d.Hash = c.Hash.String()
 	d.message = c.Message
 	d.shortHash = c.Hash.String()[:8]
 
