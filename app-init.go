@@ -9,7 +9,6 @@ func main() {
 	app.SetupApp(
 		app.WithCGOEnabled(),
 		app.WithDependencies("fyne.io/fyne/v2", "github.com/go-git/go-git/v5"),
-		app.WithGithubWorkflows("linter", "test"),
 		app.WithGoVersion("1.23"),
 		app.WithMakefile(),
 	).Generate()
