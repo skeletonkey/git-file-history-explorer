@@ -9,7 +9,7 @@ func main() {
 	app.SetupApp(
 		app.WithCGOEnabled(),
 		app.WithDependencies("fyne.io/fyne/v2", "github.com/go-git/go-git/v5"),
-		app.WithGoVersion("1.23"),
+		app.WithGoVersion("1.24.2"),
 		app.WithMakefile(),
 	).Generate()
 }

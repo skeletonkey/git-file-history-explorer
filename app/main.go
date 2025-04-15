@@ -20,6 +20,8 @@ import (
 // fyne_demo &
 
 const (
+	version = "0.1.1"
+
 	firstCommitIndex widget.ListItemID = 0
 
 	// window sizes
@@ -85,7 +87,7 @@ func main() {
 
 	w.Resize(fyne.NewSize(windowWidth, windowHeight))
 	w.CenterOnScreen()
-	w.SetTitle(repo.GetTitle())
+	w.SetTitle(fmt.Sprintf("%s [ver. %s]", repo.GetTitle(), version))
 	w.ShowAndRun()
 }
 
